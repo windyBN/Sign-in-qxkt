@@ -4,38 +4,38 @@ import Script from "next/script";
 import "./globals.css";
 
 const notoSans = Noto_Sans_SC({
-	variable: "--font-noto-sans",
-	subsets: ["latin"],
-	weight: ["400", "500", "700"],
+  variable: "--font-noto-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
 });
 
 const notoSerif = Noto_Serif_SC({
-	variable: "--font-noto-serif",
-	subsets: ["latin"],
-	weight: ["400", "600", "700"],
+  variable: "--font-noto-serif",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
-	variable: "--font-ibm-mono",
-	subsets: ["latin"],
-	weight: ["400", "500"],
+  variable: "--font-ibm-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
-	title: "UCAS Course Sign in",
-	description: "输入学号与密码，查询课程并生成实时刷新签到码（每5秒刷新，下载码10秒有效）",
-	icons: {
-		icon: "/ucas.svg",
-		shortcut: "/ucas.svg",
-		apple: "/ucas.svg",
-	},
+  title: "轻新课堂 · 课程签到",
+  description: "国科大课程查询与签到助手，支持实时二维码、手动生成及明暗主题。",
+  icons: {
+    icon: "/ucas.svg",
+    shortcut: "/ucas.svg",
+    apple: "/ucas.svg",
+  },
 };
 
 export const viewport: Viewport = {
-	themeColor: [
-		{ media: "(prefers-color-scheme: light)", color: "#f1f5fb" },
-		{ media: "(prefers-color-scheme: dark)", color: "#141f31" },
-	],
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f1f5fb" },
+    { media: "(prefers-color-scheme: dark)", color: "#141f31" },
+  ],
 };
 
 const themeInitScript = `
@@ -54,22 +54,22 @@ const themeInitScript = `
 `;
 
 export default function RootLayout({
-	children,
+  children,
 }: Readonly<{
-	children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-	return (
-		<html
-			lang="zh-CN"
-			suppressHydrationWarning
-			className={`${notoSans.variable} ${notoSerif.variable} ${ibmPlexMono.variable} h-full antialiased`}
-		>
-			<body className="min-h-full flex flex-col">
-				<Script id="theme-init" strategy="beforeInteractive">
-					{themeInitScript}
-				</Script>
-				{children}
-			</body>
-		</html>
-	);
+  return (
+    <html
+      lang="zh-CN"
+      suppressHydrationWarning
+      className={`${notoSans.variable} ${notoSerif.variable} ${ibmPlexMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
+        {children}
+      </body>
+    </html>
+  );
 }

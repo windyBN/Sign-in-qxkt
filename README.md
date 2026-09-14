@@ -1,41 +1,39 @@
-# UCAS Course Sign in
+# 轻新课堂 · 课程签到
+
+Sign-in-qxkt：国科大课程查询与签到助手。
 
 UCAS 课程查询与签到二维码生成工具。
 
-在线访问：[UCAS Course Sign in (Vercel)](https://ucas-sign-in.vercel.app/)
+本仓库：https://github.com/windyBN/Sign-in-qxkt
 
->[!CAUTION]
-> **本项目仅供学习交流使用，请勿用于任何商业用途或非法用途。**
+本版本尚未提供独立部署地址。
 
-本项目用于复现 XXXX 的课程查询与签到链路，帮助用户在网页端完成以下流程：
+支持以下功能：
 
 1. 输入学号、密码和日期，查询当天课程
 2. 选择课程，生成可实时刷新的签到二维码
 3. 在可签到时间内直接发起签到
 4. 手动输入课程 ID 或 UUID，生成对应签到码
 
-## 运行截图
+## 界面与交互
 
-![亮色模式](./doc/img/light-mode.png)
-
-![暗色模式](./doc/img/dark-mode.png)
-
-![课程列表与二维码](./doc/img/course-list-qr.png)
+- 中文标题、蓝灰配色、轻阴影卡片与分组导航。
+- 支持亮色、暗色和初始跟随系统主题，以及移动端布局。
+- 页面已移除 GitHub 链接、Star 数、仓库更新时间及相应请求、缓存逻辑。
+- 二维码默认每 5 秒刷新；界面的倒计时是本地刷新策略，实际是否有效由学校服务器决定。
 
 ## 快速开始
 
-### 在线访问（推荐）
-
-[UCAS Course Sign in (Vercel)](https://ucas-sign-in.vercel.app/)
+需要 Node.js 20.9 或更新版本（建议使用受支持的 LTS 版本）。
 
 ### 本地运行
 
 1. 克隆仓库并安装依赖
 
 ```bash
-git clone https://github.com/lccipher/UCAS-Course-Sign-in
-cd UCAS-Course-Sign-in
-npm install
+git clone https://github.com/windyBN/Sign-in-qxkt.git
+cd Sign-in-qxkt
+npm ci
 ```
 
 2. 启动开发环境
@@ -63,7 +61,7 @@ npm run lint
 
 推荐使用 Vercel 进行部署，步骤如下：
 
-1. Fork 本仓库到你的 GitHub 账号
+1. 在 Vercel 中选择本仓库 `windyBN/Sign-in-qxkt`
 2. 在 Vercel 导入项目
 3. Framework 自动识别为 Next.js
 4. Build Command 使用默认的 `npm run build`
@@ -76,7 +74,7 @@ Browser
 	-> POST /api/course-uuid/query
 		-> login.action (上游登录)
 		-> get_stu_course_sched.action (上游课表)
-	<- 返回课程列表（已脱敏整理）
+	<- 返回课程列表（筛选后的课程字段）
 Browser
 	-> 选择课程 / 手动输入课程 ID 或 UUID
 	-> 本地生成签到 URL + QR Code
@@ -85,6 +83,7 @@ Browser
 
 说明：
 
+- 查询课程和直接签到时，学号与密码会经本站后端转交学校平台；当前代码不将其写入数据库或浏览器持久存储。
 - 上游 `sessionId` 只在服务端请求链路中短暂使用，不回传前端。
 - 前端二维码和下载二维码都由本地生成，不依赖额外前端存储。
 - 直接签到时，服务端会先登录，再调用上游签到接口。
@@ -99,8 +98,10 @@ Browser
 │     │  └─ course-uuid/
 │     │     ├─ query/
 │     │     │  └─ route.ts      # 登录 + 课表查询接口
-│     │     └─ sign/
-│     │        └─ route.ts      # 登录 + 直接签到接口
+│     │     ├─ sign/
+│     │     │  └─ route.ts      # 登录 + 直接签到接口
+│     │     └─ timestamp/
+│     │        └─ route.ts      # 学校服务器时间
 │     ├─ globals.css            # 全局样式与主题变量
 │     ├─ layout.tsx             # 字体、元信息、主题初始化
 │     └─ page.tsx               # 主页面（查询、列表、二维码、签到）
@@ -124,9 +125,9 @@ Browser
 
 ```json
 {
-	"username": "2025xxxxxxxxxx",
-	"password": "your-password",
-	"date": "20260325"
+  "username": "2025xxxxxxxxxx",
+  "password": "your-password",
+  "date": "20260325"
 }
 ```
 
@@ -140,20 +141,20 @@ Browser
 
 ```json
 {
-	"date": "20260325",
-	"total": 2,
-	"courses": [
-		{
-			"id": "114xxxx",
-			"uuid": "CADD27F17ACC44EDAFxxxxxxxxxxxxxx",
-			"courseName": "xxxxxxx",
-			"teacherName": "xxx",
-			"weekDay": "周三",
-			"classBeginTime": "2026-03-25 10:25:00",
-			"classEndTime": "2026-03-25 12:00:00",
-			"signStatus": "1"
-		}
-	]
+  "date": "20260325",
+  "total": 2,
+  "courses": [
+    {
+      "id": "114xxxx",
+      "uuid": "CADD27F17ACC44EDAFxxxxxxxxxxxxxx",
+      "courseName": "xxxxxxx",
+      "teacherName": "xxx",
+      "weekDay": "周三",
+      "classBeginTime": "2026-03-25 10:25:00",
+      "classEndTime": "2026-03-25 12:00:00",
+      "signStatus": "1"
+    }
+  ]
 }
 ```
 
@@ -161,8 +162,8 @@ Browser
 
 ```json
 {
-	"message": "登录接口请求超时",
-	"code": "UPSTREAM_LOGIN_TIMEOUT"
+  "message": "登录接口请求超时",
+  "code": "UPSTREAM_LOGIN_TIMEOUT"
 }
 ```
 
@@ -178,9 +179,10 @@ Browser
 
 ```json
 {
-	"username": "2025xxxxxxxxxx",
-	"password": "your-password",
-	"timeTableId": "CADD27F17ACC44EDAFxxxxxxxxxxxxxx"
+  "username": "2025xxxxxxxxxx",
+  "password": "your-password",
+  "courseSchedId": "1234567",
+  "timestamp": 1774405500000
 }
 ```
 
@@ -188,19 +190,21 @@ Browser
 
 - `username`：学号，必填
 - `password`：密码，必填
-- `timeTableId`：课程 UUID，必填，必须是 32 位十六进制字符串
+- `courseSchedId`：7 位数字课程 ID，必填。当前直接签到接口不接受 UUID；UUID 仅用于手动生成二维码。
+- `timestamp`：毫秒时间戳，前端根据学校服务器时间校准。示例值仅展示格式，不能直接用于签到。
+- 页面将直接签到入口限制为开课前 30 分钟至下课时间，最终结果以学校服务器返回为准。
 
 成功响应示例：
 
 ```json
 {
-	"success": true,
-	"message": "签到成功",
-	"upstreamStatus": "0",
-	"result": {
-		"stuSignId": "123456",
-		"stuSignStatus": "1"
-	}
+  "success": true,
+  "message": "签到成功",
+  "upstreamStatus": "0",
+  "result": {
+    "stuSignId": "123456",
+    "stuSignStatus": "1"
+  }
 }
 ```
 
@@ -208,15 +212,19 @@ Browser
 
 ```json
 {
-	"success": false,
-	"message": "签到失败，请稍后重试",
-	"upstreamStatus": "1",
-	"result": {
-		"stuSignId": "123456",
-		"stuSignStatus": "0"
-	}
+  "success": false,
+  "message": "签到失败，请稍后重试",
+  "upstreamStatus": "1",
+  "result": {
+    "stuSignId": "123456",
+    "stuSignStatus": "0"
+  }
 }
 ```
+
+### GET /api/course-uuid/timestamp
+
+返回 `{ "success": true, "timestamp": 1774405500000 }` 形式的服务器时间，用于校准二维码时间戳。时间请求失败时前端使用已有偏差缓存或本机时间。
 
 ## 错误码与排查
 
@@ -270,6 +278,8 @@ Browser
 - ESLint 9 + eslint-config-next
 - qrcode 1.5.4（前端二维码生成）
 
-## License
+## 来源与许可证
 
-[AGPL-3.0 License](./LICENSE)
+本项目基于 [lccipher/UCAS-Course-Sign-in](https://github.com/lccipher/UCAS-Course-Sign-in) 修改，保留上游提交历史。当前版本调整了前端展示并修订文档。
+
+沿用 [AGPL-3.0 License](./LICENSE)。
